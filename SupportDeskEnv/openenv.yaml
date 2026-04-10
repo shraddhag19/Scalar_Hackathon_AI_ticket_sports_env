@@ -1,0 +1,73 @@
+name: support-desk-env
+description: |
+  A realistic SaaS customer support environment where an AI agent
+  must triage support tickets, retrieve knowledge base articles,
+  inspect account metadata, and respond to customers.
+
+version: "1.0.0"
+
+environment:
+  entrypoint: app.py
+  framework: fastapi
+
+tasks:
+  - id: task_easy_billing_triage
+    difficulty: easy
+    description: >
+      Classify a duplicate billing charge ticket, verify payment
+      status, and respond appropriately without escalation.
+
+  - id: task_medium_missing_invoice
+    difficulty: medium
+    description: >
+      Investigate why a customer cannot see an invoice after a
+      successful payment and guide them correctly.
+
+  - id: task_hard_feature_locked_after_upgrade
+    difficulty: hard
+    description: >
+      Diagnose why a premium feature remains locked after a plan
+      upgrade by checking permissions and account configuration.
+
+action_space:
+  - classify_ticket
+  - search_kb
+  - check_account
+  - reply_customer
+  - escalate_ticket
+  - resolve_ticket
+
+observation_fields:
+  - ticket_id
+  - task_id
+  - customer_message
+  - customer_profile
+  - interaction_history
+  - visible_tools
+  - current_status
+  - remaining_steps
+  - last_tool_result
+
+reward:
+  type: shaped
+  range: [-1.0, 1.0]
+  description: |
+    Reward is given for correct classification, relevant KB retrieval,
+    useful account inspection, and high-quality customer replies.
+    Penalties are applied for invalid actions, repeated actions,
+    wasted steps, and incorrect escalation or resolution.
+
+grader:
+  deterministic: true
+  score_range: [0.0, 1.0]
+  description: |
+    Final episode score is computed by a deterministic grader that
+    evaluates classification accuracy, urgency selection, account
+    checks, KB retrieval, reply quality, and correct terminal action.
+
+episode:
+  max_steps: 10
+  termination_conditions:
+    - resolve_ticket
+    - escalate_ticket
+    - max_steps_reached

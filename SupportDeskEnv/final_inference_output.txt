@@ -1,0 +1,33 @@
+[START] task_id=task_easy_billing_triage
+[STEP] task_id=task_easy_billing_triage step=1 action={"action_type": "classify_ticket", "category": "billing", "urgency": "medium"} reward=0.2 done=False
+[STEP] task_id=task_easy_billing_triage step=2 action={"action_type": "check_account", "account_field": "last_payment_status"} reward=0.1 done=False
+[STEP] task_id=task_easy_billing_triage step=3 action={"action_type": "search_kb", "query": "double charge duplicate payment review"} reward=0.15 done=False
+[STEP] task_id=task_easy_billing_triage step=4 action={"action_type": "reply_customer", "message": "We are reviewing this billing issue and checking the payment records."} reward=0.2 done=False
+[STEP] task_id=task_easy_billing_triage step=5 action={"action_type": "resolve_ticket", "resolution_note": "Resolved after billing review."} reward=0.25 done=True
+[END] task_id=task_easy_billing_triage steps=5 final_reward=0.25 final_score=1.0
+[START] task_id=task_medium_missing_invoice
+[STEP] task_id=task_medium_missing_invoice step=1 action={"action_type": "classify_ticket", "category": "billing", "urgency": "medium"} reward=0.2 done=False
+[STEP] task_id=task_medium_missing_invoice step=2 action={"action_type": "check_account", "account_field": "last_payment_status"} reward=0.1 done=False
+[STEP] task_id=task_medium_missing_invoice step=3 action={"action_type": "check_account", "account_field": "invoice_available"} reward=0.1 done=False
+[STEP] task_id=task_medium_missing_invoice step=4 action={"action_type": "search_kb", "query": "missing invoice payment successful billing dashboard 24 hours"} reward=0.15 done=False
+[STEP] task_id=task_medium_missing_invoice step=5 action={"action_type": "reply_customer", "message": "Your payment was successful. The invoice can take up to 24 hours to appear in the billing dashboard."} reward=0.2 done=False
+[STEP] task_id=task_medium_missing_invoice step=6 action={"action_type": "resolve_ticket", "resolution_note": "Explained invoice availability timing."} reward=0.25 done=True
+[END] task_id=task_medium_missing_invoice steps=6 final_reward=0.25 final_score=1.0
+[START] task_id=task_hard_feature_locked_after_upgrade
+[STEP] task_id=task_hard_feature_locked_after_upgrade step=1 action={"action_type": "classify_ticket", "category": "feature_access", "urgency": "high"} reward=0.2 done=False
+[STEP] task_id=task_hard_feature_locked_after_upgrade step=2 action={"action_type": "check_account", "account_field": "plan"} reward=0.1 done=False
+[STEP] task_id=task_hard_feature_locked_after_upgrade step=3 action={"action_type": "check_account", "account_field": "seat_permission_granted"} reward=0.1 done=False
+[STEP] task_id=task_hard_feature_locked_after_upgrade step=4 action={"action_type": "check_account", "account_field": "workspace_role"} reward=0.1 done=False
+[STEP] task_id=task_hard_feature_locked_after_upgrade step=5 action={"action_type": "search_kb", "query": "premium export upgrade workspace owner permission pro"} reward=0.15 done=False
+[STEP] task_id=task_hard_feature_locked_after_upgrade step=6 action={"action_type": "reply_customer", "message": "Your Pro plan is active, but premium export also requires the correct permission. Please ask the workspace owner to grant the required permission."} reward=0.2 done=False
+[STEP] task_id=task_hard_feature_locked_after_upgrade step=7 action={"action_type": "resolve_ticket", "resolution_note": "Explained permission dependency for premium export."} reward=0.25 done=True
+[END] task_id=task_hard_feature_locked_after_upgrade steps=7 final_reward=0.25 final_score=1.0
+{
+  "tasks_run": 3,
+  "scores": [
+    1.0,
+    1.0,
+    1.0
+  ],
+  "average_score": 1.0
+}
