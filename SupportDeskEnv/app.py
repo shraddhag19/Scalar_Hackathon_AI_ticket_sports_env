@@ -6,6 +6,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from envs.support_env import SupportDeskEnv
+from envs.models import Action  # IMPORTANT FIX
 
 
 app = FastAPI(
@@ -17,6 +18,10 @@ app = FastAPI(
 env = SupportDeskEnv()
 
 
+# -------------------------------
+# Request Models
+# -------------------------------
+
 class ResetRequest(BaseModel):
     task_id: Optional[str] = None
 
@@ -24,6 +29,10 @@ class ResetRequest(BaseModel):
 class StepRequest(BaseModel):
     action: Dict[str, Any]
 
+
+# -------------------------------
+# Root & Health
+# -------------------------------
 
 @app.get("/")
 def root() -> Dict[str, Any]:
@@ -39,8 +48,26 @@ def health() -> Dict[str, str]:
     return {"status": "healthy"}
 
 
+# -------------------------------
+# RESET API (GET + POST FIX)
+# -------------------------------
+
+# ✅ Browser-friendly
+@app.get("/reset")
+def reset_get(task_id: Optional[str] = None) -> Dict[str, Any]:
+    try:
+        observation = env.reset(task_id=task_id)
+        return {
+            "observation": observation.model_dump(),
+            "done": False,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+# ✅ OpenEnv / POST requests
 @app.post("/reset")
-def reset_environment(request: ResetRequest) -> Dict[str, Any]:
+def reset_post(request: ResetRequest) -> Dict[str, Any]:
     try:
         observation = env.reset(task_id=request.task_id)
         return {
@@ -51,10 +78,18 @@ def reset_environment(request: ResetRequest) -> Dict[str, Any]:
         raise HTTPException(status_code=400, detail=str(e))
 
 
+# -------------------------------
+# STEP API (FIXED)
+# -------------------------------
+
 @app.post("/step")
 def step_environment(request: StepRequest) -> Dict[str, Any]:
     try:
-        observation, reward, done, info = env.step(request.action)
+        # 🔥 FIX: Convert dict → Action object
+        action_obj = Action(**request.action)
+
+        observation, reward, done, info = env.step(action_obj)
+
         return {
             "observation": observation.model_dump(),
             "reward": reward.model_dump(),
@@ -64,6 +99,10 @@ def step_environment(request: StepRequest) -> Dict[str, Any]:
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
+# -------------------------------
+# STATE API
+# -------------------------------
 
 @app.get("/state")
 def get_state() -> Dict[str, Any]:
