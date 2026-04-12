@@ -2,13 +2,13 @@ from __future__ import annotations
 
 import json
 import os
+import time
 from typing import Any, Dict, List
-
 import requests
 from openai import OpenAI
 
 
-API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
+API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:7860")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4o-mini")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 HF_TOKEN = os.getenv("HF_TOKEN", "")
@@ -48,24 +48,59 @@ def create_client() -> OpenAI:
     return OpenAI(**kwargs)
 
 
-def reset_env(task_id: str) -> Dict[str, Any]:
-    response = requests.post(
-        f"{API_BASE_URL}/reset",
-        json={"task_id": task_id},
-        timeout=30,
-    )
-    response.raise_for_status()
-    return response.json()
+def wait_for_server(timeout: int = 60) -> bool:
+    """
+    Wait for the environment server to be ready.
+    """
+    start_time = time.time()
+    print(f"Waiting for environment server at {API_BASE_URL}...")
+    while time.time() - start_time < timeout:
+        try:
+            response = requests.get(f"{API_BASE_URL}/health", timeout=2)
+            if response.status_code == 200:
+                print("Server is healthy and ready.")
+                return True
+        except requests.exceptions.RequestException:
+            pass
+        time.sleep(2)
+    print("Timeout waiting for server.")
+    return False
 
 
-def step_env(action: Dict[str, Any]) -> Dict[str, Any]:
-    response = requests.post(
-        f"{API_BASE_URL}/step",
-        json={"action": action},
-        timeout=30,
-    )
-    response.raise_for_status()
-    return response.json()
+def reset_env(task_id: str, retries: int = 3) -> Dict[str, Any]:
+    for i in range(retries):
+        try:
+            response = requests.post(
+                f"{API_BASE_URL}/reset",
+                json={"task_id": task_id},
+                timeout=30,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            if i == retries - 1:
+                print(f"Error resetting environment: {e}")
+                raise
+            time.sleep(2)
+    return {}
+
+
+def step_env(action: Dict[str, Any], retries: int = 3) -> Dict[str, Any]:
+    for i in range(retries):
+        try:
+            response = requests.post(
+                f"{API_BASE_URL}/step",
+                json={"action": action},
+                timeout=30,
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            if i == retries - 1:
+                print(f"Error stepping environment: {e}")
+                raise
+            time.sleep(2)
+    return {}
 
 
 def choose_fallback_action(observation: Dict[str, Any], step_index: int) -> Dict[str, Any]:
@@ -234,6 +269,10 @@ def run_task(client: OpenAI, task_id: str) -> Dict[str, Any]:
 
 
 def main() -> None:
+    if not wait_for_server():
+        print("Server is not available. Exiting.")
+        return
+
     client = create_client()
     results: List[Dict[str, Any]] = []
 
