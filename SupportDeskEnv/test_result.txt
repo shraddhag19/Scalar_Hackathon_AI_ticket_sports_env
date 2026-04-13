@@ -1,9 +1,0 @@
-============================= test session starts =============================
-platform win32 -- Python 3.13.7, pytest-9.0.3, pluggy-1.6.0
-rootdir: C:\Users\Simra\OneDrive\Documents\META HACKATHON\SupportDeskEnv
-plugins: anyio-4.13.0
-collected 10 items
-
-tests\test_env.py ..........                                             [100%]
-
-============================= 10 passed in 0.12s ==============================
