@@ -1,0 +1,4 @@
+task_easy_billing_triage: 1.0
+task_medium_missing_invoice: 1.0
+task_hard_feature_locked_after_upgrade: 1.0
+Average: 1.0
